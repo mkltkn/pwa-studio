@@ -6,7 +6,7 @@
 const { resolve } = require('path');
 const express = require('express');
 const middleware = require('./middleware');
-const debugErrorMiddleware = require('debug-error-middleware').express;
+const errorHandler = require('errorhandler');
 const morgan = require('morgan');
 
 /**
@@ -52,7 +52,7 @@ async function createUpwardServer({
     } else {
         app.use(morgan('dev'));
         app.use(upward);
-        app.use(debugErrorMiddleware());
+        app.use(errorHandler());
     }
     if (bindLocal) {
         return new Promise((resolve, reject) => {

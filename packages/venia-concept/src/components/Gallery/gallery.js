@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { string, shape, arrayOf, number } from 'prop-types';
+import { func, string, shape, arrayOf, number } from 'prop-types';
 
 import classify from 'src/classify';
 import GalleryItems, { emptyData } from './items';
@@ -28,22 +28,30 @@ class Gallery extends Component {
                 }).isRequired
             })
         ),
+        getImageUrl: func,
+        imageSizes: arrayOf(number),
         pageSize: number
     };
 
     static defaultProps = {
-        data: emptyData
+        data: emptyData,
+        getImageUrl: x => x
     };
 
     render() {
-        const { classes, data, pageSize } = this.props;
+        const { classes, data, getImageUrl, imageSizes, pageSize } = this.props;
         const hasData = Array.isArray(data) && data.length;
         const items = hasData ? data : emptyData;
 
         return (
             <div className={classes.root}>
                 <div className={classes.items}>
-                    <GalleryItems items={items} pageSize={pageSize} />
+                    <GalleryItems
+                        getImageUrl={getImageUrl}
+                        imageSizes={imageSizes}
+                        items={items}
+                        pageSize={pageSize}
+                    />
                 </div>
             </div>
         );

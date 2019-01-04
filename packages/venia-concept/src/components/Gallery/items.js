@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { arrayOf, string, number, shape } from 'prop-types';
+import { arrayOf, func, string, number, shape } from 'prop-types';
 import fixedObserver from 'src/util/fixedObserver';
 import initObserver from 'src/util/initObserver';
 import GalleryItem from './item';
@@ -22,6 +22,8 @@ const initState = (prevState, { items }) => ({
 
 class GalleryItems extends Component {
     static propTypes = {
+        getImageUrl: func.isRequired,
+        imageSizes: arrayOf(number),
         items: arrayOf(
             shape({
                 id: number.isRequired,
@@ -69,7 +71,7 @@ class GalleryItems extends Component {
     }
 
     render() {
-        const { items } = this.props;
+        const { getImageUrl, imageSizes, items } = this.props;
         const { done } = this.state;
 
         if (items === emptyData) {
@@ -78,7 +80,9 @@ class GalleryItems extends Component {
 
         return items.map(item => (
             <GalleryItem
+                getImageUrl={getImageUrl}
                 key={item.id}
+                imageSizes={imageSizes}
                 item={item}
                 showImage={done}
                 onLoad={this.handleLoad}

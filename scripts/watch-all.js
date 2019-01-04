@@ -91,6 +91,7 @@ function summarizeEvents() {
         (summaries,
         ({ name }) => {
             summaries[name] = (summaries[name] || 0) + 1;
+            return summaries;
         },
         {})
     );

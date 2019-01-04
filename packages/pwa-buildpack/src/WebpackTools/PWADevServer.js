@@ -1,5 +1,4 @@
 const debug = require('../util/debug').makeFileLogger(__filename);
-const debugErrorMiddleware = require('debug-error-middleware').express;
 const {
     default: playgroundMiddleware
 } = require('graphql-playground-middleware-express');
@@ -56,7 +55,6 @@ const PWADevServer = {
                 warnings: true
             },
             after(app, server) {
-                app.use(debugErrorMiddleware());
                 let readyNotice = chalk.green(
                     `PWADevServer ready at ${chalk.greenBright.underline(
                         devServerConfig.publicPath

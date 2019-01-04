@@ -4,11 +4,12 @@ import { Price } from '@magento/peregrine';
 import { Link } from 'react-router-dom';
 import classify from 'src/classify';
 import { transparentPlaceholder } from 'src/shared/images';
-import { makeProductMediaPath } from 'src/util/makeMediaPath';
 import defaultClasses from './item.css';
 
-const imageWidth = '300';
-const imageHeight = '372';
+const FALLBACK_IMAGE_WIDTH = 300;
+
+const imageWidth = '40vw';
+const imageHeight = '30vh';
 
 const ItemPlaceholder = ({ children, classes }) => (
     <div className={classes.root_pending}>
@@ -37,6 +38,8 @@ class GalleryItem extends Component {
             root: string,
             root_pending: string
         }),
+        getImageUrl: func.isRequired,
+        imageSizes: arrayOf(number),
         item: shape({
             id: number.isRequired,
             name: string.isRequired,
@@ -57,44 +60,50 @@ class GalleryItem extends Component {
     };
 
     static defaultProps = {
+        imageSizes: [],
         onError: () => {},
         onLoad: () => {}
     };
 
-    render() {
-        const { classes, item } = this.props;
+    /**
+     * TODO: Product images are currently broken and pending a fix from the `graphql-ce` project
+     * https://github.com/magento/graphql-ce/issues/88
+     */
+    get image() {
+        const {
+            classes,
+            item,
+            getImageUrl,
+            imageSizes,
+            showImage
+        } = this.props;
 
         if (!item) {
-            return (
-                <ItemPlaceholder classes={classes}>
-                    {this.renderImagePlaceholder()}
-                </ItemPlaceholder>
-            );
+            return null;
         }
 
-        const { name, price, url_key } = item;
-        const productLink = `/${url_key}${productUrlSuffix}`;
+        const { small_image, name } = item;
+        const className = showImage ? classes.image : classes.image_pending;
 
         return (
-            <div className={classes.root}>
-                <Link to={productLink} className={classes.images}>
-                    {this.renderImagePlaceholder()}
-                    {this.renderImage()}
-                </Link>
-                <Link to={productLink} className={classes.name}>
-                    <span>{name}</span>
-                </Link>
-                <div className={classes.price}>
-                    <Price
-                        value={price.regularPrice.amount.value}
-                        currencyCode={price.regularPrice.amount.currency}
-                    />
-                </div>
-            </div>
+            <img
+                className={className}
+                srcset={imageSizes
+                    .map(
+                        width =>
+                            `${getImageUrl(small_image, { width })} ${width}w`
+                    )
+                    .join(', ')}
+                sizes={GalleryItem.sizes}
+                src={getImageUrl(small_image)}
+                alt={name}
+                onLoad={this.handleLoad}
+                onError={this.handleError}
+            />
         );
     }
 
-    renderImagePlaceholder = () => {
+    get imagePlaceholder() {
         const { classes, item, showImage } = this.props;
 
         if (showImage) {
@@ -108,40 +117,47 @@ class GalleryItem extends Component {
         return (
             <img
                 className={className}
+                sizes={GalleryItem.sizes}
                 src={transparentPlaceholder}
                 alt=""
                 width={imageWidth}
                 height={imageHeight}
             />
         );
-    };
+    }
 
-    /**
-     * TODO: Product images are currently broken and pending a fix from the `graphql-ce` project
-     * https://github.com/magento/graphql-ce/issues/88
-     */
-    renderImage = () => {
-        const { classes, item, showImage } = this.props;
+    render() {
+        const { classes, item } = this.props;
 
         if (!item) {
-            return null;
+            return (
+                <ItemPlaceholder classes={classes}>
+                    {this.imagePlaceholder}
+                </ItemPlaceholder>
+            );
         }
 
-        const { small_image, name } = item;
-        const className = showImage ? classes.image : classes.image_pending;
+        const { name, price, url_key } = item;
+        const productLink = `/${url_key}${productUrlSuffix}`;
 
         return (
-            <img
-                className={className}
-                src={makeProductMediaPath(small_image)}
-                alt={name}
-                width={imageWidth}
-                height={imageHeight}
-                onLoad={this.handleLoad}
-                onError={this.handleError}
-            />
+            <div className={classes.root}>
+                <Link to={productLink} className={classes.images}>
+                    {this.imagePlaceholder}
+                    {this.image}
+                </Link>
+                <Link to={productLink} className={classes.name}>
+                    <span>{name}</span>
+                </Link>
+                <div className={classes.price}>
+                    <Price
+                        value={price.regularPrice.amount.value}
+                        currencyCode={price.regularPrice.amount.currency}
+                    />
+                </div>
+            </div>
         );
-    };
+    }
 
     handleLoad = () => {
         const { item, onLoad } = this.props;

@@ -5,6 +5,7 @@ import gql from 'graphql-tag';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import classify from 'src/classify';
+import { makeProductMediaPath } from 'src/util/makeMediaPath';
 import { setCurrentPage, setPrevPageTotal } from 'src/actions/catalog';
 import CategoryContent from './categoryContent';
 import defaultClasses from './category.css';
@@ -55,6 +56,14 @@ class Category extends Component {
     static defaultProps = {
         id: 3
     };
+
+    static getCatalogImageUrl(imagePath, { width } = {}) {
+        return width
+            ? makeProductMediaPath('sized', `${width}w`, imagePath)
+            : makeProductMediaPath(imagePath);
+    }
+
+    static imageSizes = [160, 300, 480, 640];
 
     render() {
         const {
@@ -110,6 +119,8 @@ class Category extends Component {
                         <CategoryContent
                             classes={classes}
                             pageControl={totalWrapper}
+                            imageSizes={Category.imageSizes}
+                            getCatalogImageUrl={Category.getCatalogImageUrl}
                             data={data}
                         />
                     );
