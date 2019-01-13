@@ -1,5 +1,3 @@
-const File = require('../File');
-
 class AbstractCompiledResource {
     static get supportedExtensions() {
         throw new Error(
@@ -12,29 +10,13 @@ class AbstractCompiledResource {
                 'Internal error: Cannot instantiate AbstractCompiledResource directly'
             );
         }
-        if (source !== '' && !source) {
+        if (typeof source !== 'string') {
             throw new Error(
-                `${
-                    this.constructor.name
-                } first argument must be a string, buffer, or File source`
+                `Must construct a CompiledResource with string source. Was supplied a ${typeof source}: ${source}`
             );
         }
         this.source = source;
         this.io = io;
-    }
-    async getSource(encoding) {
-        const contents = await File.readToEnd(this.source);
-        const wantsString =
-            encoding !== 'binary' &&
-            encoding !== 'buffer' &&
-            typeof encoding === 'string';
-        if (Buffer.isBuffer(contents) && wantsString) {
-            return contents.toString(encoding);
-        }
-        if (!Buffer.isBuffer(contents) && !wantsString) {
-            return Buffer.from(contents);
-        }
-        return contents;
     }
     async compile() {
         throw new Error(

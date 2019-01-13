@@ -4,27 +4,31 @@ const tape = require('tape');
 
 const { getScenarios, runServer, assertOnResponse } = require('../../');
 
-const scenarios = getScenarios(/request\-handling/);
+const gettingScenarios = getScenarios(/request\-handling/);
 
 tape.test('Reflect request', async t => {
-    await runServer(
+    const scenarios = await gettingScenarios;
+    const server = await runServer(
         t,
-        await scenarios.getResourcePath('./reflect-request.yml'),
-        async server => {
-            if (server.assert('launched')) {
-                const response = await fetch(
-                    new URL('/some/path?query=parameters', server.url)
-                );
-
-                await assertOnResponse(t, response, {
-                    status: 200,
-                    headers: {
-                        'content-type': 'text/plain'
-                    },
-                    text: 'some/path'
-                });
-            }
-            server.assert('crashed', false);
-        }
+        scenarios.getResourcePath('./reflect-request.yml')
     );
+
+    if (server.assert('launched')) {
+        const response = await fetch(
+            new URL('/some/path?query=parameters', server.url)
+        );
+
+        await assertOnResponse(t, response, {
+            status: 200,
+            headers: {
+                'content-type': 'text/plain'
+            },
+            text: 'some/path'
+        });
+
+        server.assert('crashed', false);
+    }
+
+    await server.close();
+    t.end();
 });

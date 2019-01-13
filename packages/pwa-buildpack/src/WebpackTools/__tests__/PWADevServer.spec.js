@@ -190,7 +190,7 @@ test('.configure() errors on bad "provideSecureHost" option', async () => {
     ).rejects.toThrowError('Unrecognized argument');
 });
 
-test('notifier attached', async () => {
+test('debugErrorMiddleware and notifier attached', async () => {
     const config = {
         publicPath: 'full/path/to/publicPath',
         backendUrl: 'https://www.example.com'
@@ -209,6 +209,7 @@ test('notifier attached', async () => {
         }
     };
     devServer.after(app, server);
+    expect(app.use).toHaveBeenCalledWith(expect.any(Function));
     expect(waitUntilValid).toHaveBeenCalled();
     const [notifier] = waitUntilValid.mock.calls[0];
     expect(notifier).toBeInstanceOf(Function);

@@ -6,13 +6,9 @@ class GraphQLDocument extends AbstractCompiledResource {
         return ['.graphql', '.gql'];
     }
     async compile() {
-        this._contents = gql(await this.getSource('utf8'));
-        return this;
+        this._contents = gql(this.source);
     }
     async render() {
-        if (!this._contents) {
-            await this.compile();
-        }
         return this._contents;
     }
 }

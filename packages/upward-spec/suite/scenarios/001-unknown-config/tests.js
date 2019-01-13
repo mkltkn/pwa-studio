@@ -2,20 +2,30 @@ const tape = require('tape');
 
 const { getScenarios, runServer } = require('../../');
 
-const scenarios = getScenarios(/unknown\-config/);
+const gettingScenarios = getScenarios(/unknown\-config/);
 
 tape.test('Crashes if config file is missing', async t => {
-    await runServer(
+    const scenarios = await gettingScenarios;
+    const server = await runServer(
         t,
-        await scenarios.getResourcePath('./absolutely-no-way-this-file-exists'),
-        server => server.assert('crashed')
+        scenarios.getResourcePath('./absolutely-no-way-this-file-exists')
     );
+
+    server.assert('crashed');
+
+    await server.close();
+    t.end();
 });
 
 tape.test('Crashes if config file is unparseable', async t => {
-    await runServer(
+    const scenarios = await gettingScenarios;
+    const server = await runServer(
         t,
-        await scenarios.getResourcePath('./unparseable.yml'),
-        server => server.assert('crashed')
+        scenarios.getResourcePath('./unparseable.yml')
     );
+
+    server.assert('crashed');
+
+    await server.close();
+    t.end();
 });

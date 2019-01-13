@@ -3,13 +3,11 @@ jest.mock('@magento/upward-js');
 const upward = require('@magento/upward-js');
 const fetch = require('node-fetch');
 const UpwardPlugin = require('../UpwardPlugin');
-const streamFrom = require('from2-string');
-const getStream = require('get-stream');
 
 test('creates a devServer.after function if it does not exist', () => {
     const devServer = {};
     const app = {
-        use: jest.fn().mockName('app.use')
+        use: jest.fn()
     };
     new UpwardPlugin(devServer, process.env);
     expect(devServer.after).toBeInstanceOf(Function);
@@ -18,10 +16,10 @@ test('creates a devServer.after function if it does not exist', () => {
 });
 
 test('composes with an existing devServer.after function', () => {
-    const after = jest.fn().mockName('devServer.after');
+    const after = jest.fn();
     const devServer = { after };
     const app = {
-        use: jest.fn().mockName('app.use')
+        use: jest.fn()
     };
     new UpwardPlugin(devServer, process.env);
     expect(devServer.after).not.toBe(after);
@@ -37,9 +35,9 @@ test('applies to a Webpack compiler and resolves any existing devServer requests
         res = {},
         next = {};
     const app = {
-        use: jest.fn().mockName('app.use')
+        use: jest.fn()
     };
-    const upwardHandler = jest.fn().mockName('middleware');
+    const upwardHandler = jest.fn();
 
     upward.middleware.mockResolvedValueOnce(upwardHandler);
 
@@ -68,7 +66,7 @@ test('applies to a Webpack compiler and resolves any existing devServer requests
         'path/to/upward',
         process.env,
         expect.objectContaining({
-            createReadFileStream: expect.any(Function),
+            readFile: expect.any(Function),
             networkFetch: expect.any(Function)
         })
     );
@@ -78,7 +76,7 @@ test('applies to a Webpack compiler and resolves any existing devServer requests
 test('shares compiler promise', async () => {
     const devServer = {};
     const compiler = {};
-    const upwardHandler = jest.fn().mockName('middleware');
+    const upwardHandler = jest.fn();
 
     upward.middleware.mockResolvedValueOnce(upwardHandler);
     const plugin = new UpwardPlugin(devServer, process.env, 'path/to/upward');
@@ -99,9 +97,9 @@ test('shares middleware promise so as not to create multiple middlewares', async
         res = {},
         next = {};
     const app = {
-        use: jest.fn().mockName('app.use')
+        use: jest.fn()
     };
-    const upwardHandler = jest.fn().mockName('middleware');
+    const upwardHandler = jest.fn();
 
     upward.middleware.mockResolvedValueOnce(upwardHandler);
     const plugin = new UpwardPlugin(devServer, process.env, 'path/to/upward');
@@ -126,20 +124,14 @@ test('supplies a dev-mode IOAdapter with webpack fs integration', async () => {
             }
         },
         outputFileSystem: {
-            readFileSync: jest
-                .fn()
-                .mockName('compiler.outputFileSystem.readFileSync')
+            readFileSync: jest.fn()
         },
         inputFileSystem: {
-            readFileSync: jest
-                .fn()
-                .mockName('compiler.inputFileSystem.readFileSync')
+            readFileSync: jest.fn()
         }
     };
     const defaultIO = {
-        createReadFileStream: jest
-            .fn()
-            .mockName('defaultIO.createReadFileStream')
+        readFile: jest.fn()
     };
     const app = {
         use: jest.fn()
@@ -160,56 +152,50 @@ test('supplies a dev-mode IOAdapter with webpack fs integration', async () => {
     compiler.outputFileSystem.readFileSync.mockImplementationOnce(() => {
         return 'from output file system';
     });
-    const fromOutputFileSystem = await io.createReadFileStream(
-        'aFile',
-        'latin1'
-    );
-    await expect(
-        getStream(fromOutputFileSystem, { encoding: 'latin1' })
-    ).resolves.toBe('from output file system');
+    const fromOutputFileSystem = await io.readFile('aFile', 'binary');
+    expect(fromOutputFileSystem).toBe('from output file system');
     expect(compiler.outputFileSystem.readFileSync).toHaveBeenCalledWith(
         expect.stringMatching(/aFile$/),
-        'latin1'
+        'binary'
     );
 
     compiler.outputFileSystem.readFileSync.mockImplementationOnce(() => {
         throw new Error('ENOENT');
     });
-    defaultIO.createReadFileStream.mockResolvedValueOnce(
-        streamFrom('from default file system')
+    defaultIO.readFile.mockResolvedValueOnce('from default filesystem');
+    const fromDefaultFileSystem = await io.readFile('bFile');
+    expect(fromDefaultFileSystem).toBe('from default filesystem');
+    expect(compiler.outputFileSystem.readFileSync).toHaveBeenCalledWith(
+        expect.stringMatching(/bFile$/),
+        undefined
     );
-    const fromDefaultFileSystem = await io.createReadFileStream('bFile');
-    await expect(
-        getStream(fromDefaultFileSystem, { encoding: 'utf8' })
-    ).resolves.toBe('from default file system');
-    expect(compiler.outputFileSystem.readFileSync).toHaveBeenLastCalledWith(
-        expect.stringMatching(/bFile$/)
-    );
-    expect(defaultIO.createReadFileStream).toHaveBeenLastCalledWith(
-        expect.stringMatching(/bFile$/)
+    expect(defaultIO.readFile).toHaveBeenCalledWith(
+        expect.stringMatching(/bFile$/),
+        undefined
     );
 
     compiler.outputFileSystem.readFileSync.mockImplementationOnce(() => {
         throw new Error('ENOENT');
     });
-    defaultIO.createReadFileStream.mockImplementationOnce(() =>
+    defaultIO.readFile.mockImplementationOnce(() =>
         Promise.reject(new Error('ENOENT'))
     );
     compiler.inputFileSystem.readFileSync.mockImplementationOnce(
         () => 'from input file system'
     );
-    const fromInputFileSystem = await io.createReadFileStream('cFile');
-    await expect(
-        getStream(fromInputFileSystem, { encoding: 'utf8' })
-    ).resolves.toBe('from input file system');
-    expect(compiler.outputFileSystem.readFileSync).toHaveBeenLastCalledWith(
-        expect.stringMatching(/cFile$/)
+    const fromInputFileSystem = await io.readFile('cFile');
+    expect(fromInputFileSystem).toBe('from input file system');
+    expect(compiler.outputFileSystem.readFileSync).toHaveBeenCalledWith(
+        expect.stringMatching(/cFile$/),
+        undefined
     );
-    expect(defaultIO.createReadFileStream).toHaveBeenLastCalledWith(
-        expect.stringMatching(/cFile$/)
+    expect(defaultIO.readFile).toHaveBeenCalledWith(
+        expect.stringMatching(/cFile$/),
+        undefined
     );
-    expect(compiler.inputFileSystem.readFileSync).toHaveBeenLastCalledWith(
-        expect.stringMatching(/cFile$/)
+    expect(compiler.inputFileSystem.readFileSync).toHaveBeenCalledWith(
+        expect.stringMatching(/cFile$/),
+        undefined
     );
 });
 

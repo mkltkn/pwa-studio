@@ -52,6 +52,12 @@ class Category extends Component {
         prevPageTotal: number
     };
 
+    // TODO: Should not be a default here, we just don't have
+    // the wiring in place to map route info down the tree (yet)
+    static defaultProps = {
+        id: 3
+    };
+
     render() {
         const {
             id,
