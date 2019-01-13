@@ -1,10 +1,10 @@
 import React from 'react';
 import TestRenderer from 'react-test-renderer';
 
-import ResponsiveImage from './';
+import ResponsiveImage from '../';
 
 test('renders an img tag when no render prop is passed', () => {
-    const testInstance = TestRenderer.create(
+    const testRenderer = TestRenderer.create(
         <ResponsiveImage
             alt="An image"
             className="foo-class"
@@ -15,13 +15,13 @@ test('renders an img tag when no render prop is passed', () => {
         />
     );
     expect(
-        testInstance.findByProps({
+        testRenderer.root.findByProps({
             alt: 'An image',
             className: 'foo-class',
             sizes: '(max-width: 240px) 80vw, 1024px',
             src: '/resize/1024w/media/catalog/product/a/product/img.jpg',
             srcSet:
-                '/resize/160w/media/catalog/product/a/product/img.jpg 160w, /resize/480w/media/catalog/product/a/product/img.jpg 480x, /resize/1024w/media/catalog/product/a/product/img.jpg 1024w, /resize/800w/media/catalog/product/a/product/img.jpg 800w'
+                '/resize/160w/media/catalog/product/a/product/img.jpg 160w, /resize/480w/media/catalog/product/a/product/img.jpg 480w, /resize/1024w/media/catalog/product/a/product/img.jpg 1024w, /resize/800w/media/catalog/product/a/product/img.jpg 800w'
         })
     ).toBeTruthy();
 });
@@ -37,7 +37,7 @@ test('passes props to a render function', () => {
             data-srcs={srcSet}
         />
     ));
-    const testInstance = TestRenderer.create(
+    const testRenderer = TestRenderer.create(
         <ResponsiveImage
             alt="An image property set"
             className="bar-class"
@@ -48,7 +48,17 @@ test('passes props to a render function', () => {
             render={render}
         />
     );
-    expect(testInstance.toJSON()).toMatchInlineSnapshot();
+    const span = testRenderer.root.findByType('span');
+    expect(span).toBeTruthy();
+    expect(span.props).toMatchObject({
+        'data-cls': 'bar-class',
+        'data-alt': 'An image property set',
+        'data-sz': '(max-width: 240px) 80vw, 2014px',
+        'data-s': '/resize/1024w/media/catalog/category/c/cat.jpg',
+        'data-srcs':
+            '/resize/480w/media/catalog/category/c/cat.jpg 480w, /resize/1024w/media/catalog/category/c/cat.jpg 1024w, /resize/800w/media/catalog/category/c/cat.jpg 800w',
+        'data-sz': '(max-width: 240px) 80vw, 1024px'
+    });
     expect(render).toHaveBeenCalledWith(
         expect.objectContaining({
             alt: 'An image property set',
@@ -56,7 +66,7 @@ test('passes props to a render function', () => {
             sizes: '(max-width: 240px) 80vw, 1024px',
             src: '/resize/1024w/media/catalog/category/c/cat.jpg',
             srcSet:
-                '/resize/480w/media/catalog/category/c/cat.jpg 480w, /resize/1024w/media/catalog/category/c/cat.jpg 1024w, /resize/800w/media/catalog/category/c/cat.jpg 800w,'
+                '/resize/480w/media/catalog/category/c/cat.jpg 480w, /resize/1024w/media/catalog/category/c/cat.jpg 1024w, /resize/800w/media/catalog/category/c/cat.jpg 800w'
         })
     );
 });
@@ -73,7 +83,7 @@ test('passes props and image to a render function with multiple args', () => {
             {image}
         </span>
     );
-    const testInstance = TestRenderer.create(
+    const testRenderer = TestRenderer.create(
         <ResponsiveImage
             alt="An image property set"
             className="bar-class"
@@ -84,5 +94,20 @@ test('passes props and image to a render function with multiple args', () => {
             render={render}
         />
     );
-    expect(testInstance.toJSON()).toMatchInlineSnapshot();
+    const span = testRenderer.root.findByType('span');
+    expect(span).toBeTruthy();
+    expect(span.props).toMatchObject({
+        'data-cls': 'bar-class',
+        'data-alt': 'An image property set',
+        'data-sz': '(max-width: 240px) 80vw, 2014px',
+        'data-s': '/resize/1024w/media/catalog/category/c/cat.jpg',
+        'data-srcs':
+            '/resize/480w/media/catalog/category/c/cat.jpg 480w, /resize/1024w/media/catalog/category/c/cat.jpg 1024w, /resize/800w/media/catalog/category/c/cat.jpg 800w',
+        'data-sz': '(max-width: 240px) 80vw, 1024px'
+    });
+    const img = span.children[0];
+    expect(img).toBeTruthy();
+    expect(img).toMatchObject({
+        type: 'img'
+    });
 });

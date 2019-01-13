@@ -4,15 +4,17 @@ import makeMediaUrl from 'src/util/makeMediaUrl';
 
 class ResponsiveImage extends Component {
     static propTypes = {
+        alt: string.isRequired,
         className: string,
         render: func,
         sizes: string.isRequired,
-        src: string,
+        src: string.isRequired,
         type: oneOf(['product', 'category', 'other']).isRequired,
         widthOptions: arrayOf(number).isRequired
     };
     render() {
         const {
+            alt,
             className,
             render,
             sizes,

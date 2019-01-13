@@ -84,7 +84,6 @@ test('uses custom encoding', async () => {
         enc: 'utf8'
     };
 
-    debugger;
     const lyricsFile = await new FileResolver(visitor).resolve({
         file: 'i-said',
         encoding: 'enc'

@@ -52,6 +52,11 @@ class GalleryItem extends Component {
         })
     };
 
+    static defaultProps = {
+        imageSizeBreakpoints: '(min-width: 1024px) 30vw',
+        imageSourceWidths: [320]
+    };
+
     /**
      * TODO: Product images are currently broken and pending a fix from the `graphql-ce` project
      * https://github.com/magento/graphql-ce/issues/88
@@ -76,6 +81,7 @@ class GalleryItem extends Component {
                 className={className}
                 sizes={imageSizeBreakpoints}
                 src={small_image}
+                type="product"
                 alt={name}
                 widthOptions={imageSourceWidths}
             />

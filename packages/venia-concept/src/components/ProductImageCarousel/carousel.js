@@ -48,6 +48,7 @@ class Carousel extends Component {
             <ResponsiveImage
                 className={classes.currentImage}
                 alt={alt}
+                src={file}
                 sizes="(max-width: 640px) 90w, (min-width: 641px) 50w"
                 widthOptions={[240, 480, 720, 1024]}
                 type="product"

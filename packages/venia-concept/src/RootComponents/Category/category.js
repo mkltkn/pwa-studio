@@ -6,7 +6,6 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 
 import classify from 'src/classify';
-import { makeProductMediaPath } from 'src/util/makeMediaPath';
 import { setCurrentPage, setPrevPageTotal } from 'src/actions/catalog';
 import { loadingIndicator } from 'src/components/LoadingIndicator';
 import CategoryContent from './categoryContent';
@@ -52,21 +51,6 @@ class Category extends Component {
         pageSize: number,
         prevPageTotal: number
     };
-
-    // TODO: Should not be a default here, we just don't have
-    // the wiring in place to map route info down the tree (yet)
-    static defaultProps = {
-        id: 3
-    };
-
-    static getCatalogImageUrl(imagePath, { width } = {}) {
-        const path = makeProductMediaPath(imagePath);
-        return width ? `/resize/${width}w${path}` : path;
-    }
-    static imageSizeBreakpoints =
-        '(max-width: 480px) 80vw, (max-width: 640px) 40vw, (max-width: 900px) 20vw';
-
-    static imageSourceWidths = [160, 300, 480, 640, 800];
 
     render() {
         const {
@@ -120,9 +104,6 @@ class Category extends Component {
                         <CategoryContent
                             classes={classes}
                             pageControl={totalWrapper}
-                            getCatalogImageUrl={Category.getCatalogImageUrl}
-                            imageSourceWidths={Category.imageSourceWidths}
-                            imageSizeBreakpoints={Category.imageSizeBreakpoints}
                             data={data}
                         />
                     );

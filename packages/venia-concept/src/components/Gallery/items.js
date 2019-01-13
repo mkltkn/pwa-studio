@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { arrayOf, func, string, number, shape } from 'prop-types';
+import { arrayOf, string, number, shape } from 'prop-types';
 import GalleryItem from './item';
 
 const pageSize = 12;
@@ -12,7 +12,6 @@ const defaultPlaceholders = emptyData.map((_, index) => (
 
 class GalleryItems extends Component {
     static propTypes = {
-        getImageUrl: func.isRequired,
         imageSourceWidths: arrayOf(number),
         imageSizeBreakpoints: string,
         items: arrayOf(
@@ -45,12 +44,7 @@ class GalleryItems extends Component {
     }
 
     render() {
-        const {
-            getImageUrl,
-            imageSourceWidths,
-            imageSizeBreakpoints,
-            items
-        } = this.props;
+        const { imageSourceWidths, imageSizeBreakpoints, items } = this.props;
 
         if (items === emptyData) {
             return this.placeholders;
@@ -58,7 +52,6 @@ class GalleryItems extends Component {
 
         return items.map(item => (
             <GalleryItem
-                getImageUrl={getImageUrl}
                 key={item.id}
                 imageSourceWidths={imageSourceWidths}
                 imageSizeBreakpoints={imageSizeBreakpoints}

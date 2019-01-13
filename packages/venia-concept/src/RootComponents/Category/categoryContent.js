@@ -5,16 +5,12 @@ import Pagination from 'src/components/Pagination';
 import defaultClasses from './category.css';
 
 class CategoryContent extends Component {
+    static IMAGE_SIZE_BREAKPOINTS =
+        '(max-width: 480px) 80vw, (max-width: 640px) 40vw, (max-width: 900px) 20vw';
+    static IMAGE_SOURCE_WIDTHS = [320, 480, 640, 800];
+
     render() {
-        const {
-            classes,
-            pageControl,
-            data,
-            getCatalogImageUrl,
-            imageSizeBreakpoints,
-            imageSourceWidths,
-            pageSize
-        } = this.props;
+        const { classes, pageControl, data, pageSize } = this.props;
         const items = data ? data.category.products.items : null;
         const title = data ? data.category.description : null;
 
@@ -33,9 +29,10 @@ class CategoryContent extends Component {
                         data={items}
                         title={title}
                         pageSize={pageSize}
-                        imageSizeBreakpoints={imageSizeBreakpoints}
-                        imageSourceWidths={imageSourceWidths}
-                        getImageUrl={getCatalogImageUrl}
+                        imageSizeBreakpoints={
+                            CategoryContent.IMAGE_SIZE_BREAKPOINTS
+                        }
+                        imageSourceWidths={CategoryContent.IMAGE_SOURCE_WIDTHS}
                     />
                 </section>
                 <div className={classes.pagination}>

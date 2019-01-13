@@ -52,7 +52,8 @@ afterEach(() => {
 
 test('.configure() returns a configuration object for the `devServer` property of a webpack config', async () => {
     const devServer = await PWADevServer.configure({
-        publicPath: 'full/path/to/publicPath'
+        publicPath: 'full/path/to/publicPath',
+        backendUrl: 'https://www.example.com'
     });
 
     expect(devServer).toMatchObject({
@@ -74,7 +75,8 @@ test('.configure() creates a project-unique host if `provideSecureHost` is set',
     simulate.uniqueHostProvided().portIsFree();
     const server = await PWADevServer.configure({
         publicPath: 'bork',
-        provideSecureHost: true
+        provideSecureHost: true,
+        backendUrl: 'https://www.example.com'
     });
     expect(server).toMatchObject({
         contentBase: false,
@@ -97,7 +99,8 @@ test('.configure() falls back to an open port if desired port is not available, 
     simulate.uniqueHostProvided().portIsInUse();
     const server = await PWADevServer.configure({
         publicPath: 'bork',
-        provideSecureHost: true
+        provideSecureHost: true,
+        backendUrl: 'https://www.example.com'
     });
     expect(server).toMatchObject({
         host: 'bork.bork.bork',
@@ -120,7 +123,8 @@ test('.configure() is backwards compatible with "id" option, but warns', async (
     simulate.uniqueHostProvided('flappy.bird', 8002).portIsFree();
     const server = await PWADevServer.configure({
         publicPath: 'blorch',
-        id: 'flappy'
+        id: 'flappy',
+        backendUrl: 'https://www.example.com'
     });
     expect(server).toMatchObject({
         host: 'flappy.bird',
@@ -150,7 +154,8 @@ test('.configure() allows customization of provided host', async () => {
         publicPath: 'bork',
         provideSecureHost: {
             exactDomain: 'flippy.bird'
-        }
+        },
+        backendUrl: 'https://www.example.com'
     });
     expect(configureHost).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -165,7 +170,8 @@ test('.configure() allows customization of provided host', async () => {
         publicPath: 'bork',
         provideSecureHost: {
             exactDomain: 'flippy.bird'
-        }
+        },
+        backendUrl: 'https://www.example.com'
     });
     expect(configureHost).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -176,13 +182,18 @@ test('.configure() allows customization of provided host', async () => {
 
 test('.configure() errors on bad "provideSecureHost" option', async () => {
     await expect(
-        PWADevServer.configure({ publicPath: '/', provideSecureHost: () => {} })
+        PWADevServer.configure({
+            backendUrl: 'https://example.com',
+            publicPath: '/',
+            provideSecureHost: () => {}
+        })
     ).rejects.toThrowError('Unrecognized argument');
 });
 
-test('debugErrorMiddleware and notifier attached', async () => {
+test('notifier attached', async () => {
     const config = {
-        publicPath: 'full/path/to/publicPath'
+        publicPath: 'full/path/to/publicPath',
+        backendUrl: 'https://www.example.com'
     };
 
     const devServer = await PWADevServer.configure(config);
@@ -198,7 +209,6 @@ test('debugErrorMiddleware and notifier attached', async () => {
         }
     };
     devServer.after(app, server);
-    expect(app.use).toHaveBeenCalledWith(expect.any(Function));
     expect(waitUntilValid).toHaveBeenCalled();
     const [notifier] = waitUntilValid.mock.calls[0];
     expect(notifier).toBeInstanceOf(Function);
@@ -210,7 +220,8 @@ test('debugErrorMiddleware and notifier attached', async () => {
 test('graphql-playground middleware attached', async () => {
     const config = {
         publicPath: 'full/path/to/publicPath',
-        graphqlPlayground: true
+        graphqlPlayground: true,
+        backendUrl: 'https://www.example.com'
     };
 
     const middleware = jest.fn();
@@ -254,7 +265,8 @@ test('graphql-playground middleware attached with custom queryDirs', async () =>
         publicPath: 'full/path/to/publicPath',
         graphqlPlayground: {
             queryDirs: [resolve(__dirname, '__fixtures__/queries')]
-        }
+        },
+        backendUrl: 'https://www.example.com'
     };
 
     const middleware = jest.fn();
@@ -264,7 +276,8 @@ test('graphql-playground middleware attached with custom queryDirs', async () =>
 
     expect(devServer.before).toBeInstanceOf(Function);
     const app = {
-        get: jest.fn()
+        get: jest.fn(),
+        use: jest.fn()
     };
     devServer.before(app);
     expect(playgroundMiddleware.mock.calls[0][0]).toMatchSnapshot();

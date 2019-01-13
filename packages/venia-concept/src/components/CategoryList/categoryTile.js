@@ -36,15 +36,18 @@ class CategoryTile extends Component {
             return null;
         }
         const { image, productImagePreview } = this.props.item;
-        return image
-            ? {
-                  src: image.small_image,
-                  type: 'category'
-              }
-            : {
-                  src: productImagePreview.items[0].small_image,
-                  type: 'product'
-              };
+        if (image) {
+            return {
+                src: image,
+                type: 'category'
+            };
+        }
+        if (productImagePreview.items[0]) {
+            return {
+                src: productImagePreview.items[0].small_image,
+                type: 'product'
+            };
+        }
     }
 
     render() {
@@ -59,6 +62,8 @@ class CategoryTile extends Component {
                     className={classes.image}
                     sizes="(max-width: 320px) 40vw, (min-width: 640px 30vw"
                     widthOptions={[240, 640]}
+                    src={imageInfo.src}
+                    type={imageInfo.type}
                     render={({ src }, image) => {
                         // interpolation doesn't work inside `url()` for legacy
                         // reasons so a custom property should wrap its value in

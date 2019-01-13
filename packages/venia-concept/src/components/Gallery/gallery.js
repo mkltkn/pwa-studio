@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { func, string, shape, arrayOf, number } from 'prop-types';
+import { string, shape, arrayOf, number } from 'prop-types';
 
 import classify from 'src/classify';
 import GalleryItems, { emptyData } from './items';
@@ -28,15 +28,13 @@ class Gallery extends Component {
                 }).isRequired
             })
         ),
-        getImageUrl: func,
         imageSourceWidths: arrayOf(number),
         imageSizeBreakpoints: string,
         pageSize: number
     };
 
     static defaultProps = {
-        data: emptyData,
-        getImageUrl: x => x
+        data: emptyData
     };
 
     render() {
