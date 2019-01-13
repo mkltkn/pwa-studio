@@ -29,7 +29,8 @@ class Gallery extends Component {
             })
         ),
         getImageUrl: func,
-        imageSizes: arrayOf(number),
+        imageSourceWidths: arrayOf(number),
+        imageSizeBreakpoints: string,
         pageSize: number
     };
 
@@ -39,7 +40,14 @@ class Gallery extends Component {
     };
 
     render() {
-        const { classes, data, getImageUrl, imageSizes, pageSize } = this.props;
+        const {
+            classes,
+            data,
+            getImageUrl,
+            imageSizeBreakpoints,
+            imageSourceWidths,
+            pageSize
+        } = this.props;
         const hasData = Array.isArray(data) && data.length;
         const items = hasData ? data : emptyData;
 
@@ -48,7 +56,8 @@ class Gallery extends Component {
                 <div className={classes.items}>
                     <GalleryItems
                         getImageUrl={getImageUrl}
-                        imageSizes={imageSizes}
+                        imageSizeBreakpoints={imageSizeBreakpoints}
+                        imageSourceWidths={imageSourceWidths}
                         items={items}
                         pageSize={pageSize}
                     />

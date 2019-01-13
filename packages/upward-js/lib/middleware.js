@@ -1,5 +1,4 @@
 const debug = require('debug')('upward-js:middleware');
-const errorhandler = require('errorhandler');
 const jsYaml = require('js-yaml');
 const UpwardServerError = require('./UpwardServerError');
 const IOAdapter = require('./IOAdapter');

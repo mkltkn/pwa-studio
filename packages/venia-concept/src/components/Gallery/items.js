@@ -1,29 +1,20 @@
 import React, { Component } from 'react';
 import { arrayOf, func, string, number, shape } from 'prop-types';
-import fixedObserver from 'src/util/fixedObserver';
-import initObserver from 'src/util/initObserver';
 import GalleryItem from './item';
 
 const pageSize = 12;
 const emptyData = Array.from({ length: pageSize }).fill(null);
-const createCollection = initObserver(fixedObserver);
 
 // inline the placeholder elements, since they're constant
 const defaultPlaceholders = emptyData.map((_, index) => (
     <GalleryItem key={index} placeholder={true} />
 ));
 
-// initialize the state with a one-page observer, `collection`
-// when the observer completes, set `done` to `true`
-const initState = (prevState, { items }) => ({
-    collection: createCollection(items.length),
-    done: false
-});
-
 class GalleryItems extends Component {
     static propTypes = {
         getImageUrl: func.isRequired,
-        imageSizes: arrayOf(number),
+        imageSourceWidths: arrayOf(number),
+        imageSizeBreakpoints: string,
         items: arrayOf(
             shape({
                 id: number.isRequired,
@@ -41,23 +32,6 @@ class GalleryItems extends Component {
         pageSize: number
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = initState({}, props);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const { items } = this.props;
-        const { items: nextItems } = nextProps;
-
-        if (nextItems === items) {
-            return;
-        }
-
-        this.setState(initState);
-    }
-
     get placeholders() {
         const { pageSize } = this.props;
 
@@ -71,8 +45,12 @@ class GalleryItems extends Component {
     }
 
     render() {
-        const { getImageUrl, imageSizes, items } = this.props;
-        const { done } = this.state;
+        const {
+            getImageUrl,
+            imageSourceWidths,
+            imageSizeBreakpoints,
+            items
+        } = this.props;
 
         if (items === emptyData) {
             return this.placeholders;
@@ -82,26 +60,12 @@ class GalleryItems extends Component {
             <GalleryItem
                 getImageUrl={getImageUrl}
                 key={item.id}
-                imageSizes={imageSizes}
+                imageSourceWidths={imageSourceWidths}
+                imageSizeBreakpoints={imageSizeBreakpoints}
                 item={item}
-                showImage={done}
-                onLoad={this.handleLoad}
-                onError={this.handleError}
             />
         ));
     }
-
-    handleLoad = key => {
-        const { done } = this.state.collection.next(key);
-
-        this.setState(() => ({ done }));
-    };
-
-    handleError = key => {
-        const { done } = this.state.collection.next(key);
-
-        this.setState(() => ({ done }));
-    };
 }
 
 export { GalleryItems as default, emptyData };

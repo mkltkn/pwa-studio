@@ -11,7 +11,8 @@ class CategoryContent extends Component {
             pageControl,
             data,
             getCatalogImageUrl,
-            imageSizes,
+            imageSizeBreakpoints,
+            imageSourceWidths,
             pageSize
         } = this.props;
         const items = data ? data.category.products.items : null;
@@ -32,7 +33,8 @@ class CategoryContent extends Component {
                         data={items}
                         title={title}
                         pageSize={pageSize}
-                        imageSizes={imageSizes}
+                        imageSizeBreakpoints={imageSizeBreakpoints}
+                        imageSourceWidths={imageSourceWidths}
                         getImageUrl={getCatalogImageUrl}
                     />
                 </section>

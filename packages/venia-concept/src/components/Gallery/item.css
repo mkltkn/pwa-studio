@@ -1,4 +1,5 @@
 .root {
+    width: 40vw;
 }
 
 .images {
@@ -60,4 +61,22 @@
     composes: price;
     background-color: rgb(var(--venia-grey));
     width: 3rem;
+}
+
+@media (max-width: 480px) {
+    .root {
+        width: 80vw;
+    }
+}
+
+@media (max-width: 640px) {
+    .root {
+        width: 40vw;
+    }
+}
+
+@media (min-width: 1024px) {
+    .root {
+        width: 20vw;
+    }
 }

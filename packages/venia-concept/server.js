@@ -1,6 +1,14 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'test';
+}
 const validEnv = require('./validate-environment')(process.env);
-const { createUpwardServer, envToConfig } = require('@magento/upward-js');
+const {
+    bestPractices,
+    createUpwardServer,
+    envToConfig
+} = require('@magento/upward-js');
+const expressSharp = require('express-sharp');
 
 async function serve() {
     const config = Object.assign(
@@ -9,7 +17,17 @@ async function serve() {
             logUrl: true
         },
         envToConfig(validEnv),
-        { env: validEnv }
+        {
+            env: validEnv,
+            before: app => {
+                app.use(
+                    '/scale',
+                    expressSharp({
+                        baseHost: validEnv.MAGENTO_BACKEND_URL
+                    })
+                );
+            }
+        }
     );
 
     if (validEnv.isProduction) {
@@ -26,7 +44,8 @@ async function serve() {
             );
             config.port = 0;
         }
-        await createUpwardServer(config);
+        const { app } = await createUpwardServer(config);
+        app.use(bestPractices());
         console.log(`UPWARD Server listening in production mode.`);
         return;
     }

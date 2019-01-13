@@ -13,6 +13,7 @@ const readdir = promisify(readdirAsync);
 const readFile = promisify(readFileAsync);
 const { resolve, relative } = require('path');
 const boxen = require('boxen');
+const expressSharp = require('express-sharp');
 
 const secureHostWarning = chalk.redBright(
     `  To enable all PWA features and avoid ServiceWorker collisions, PWA Studio
@@ -32,7 +33,8 @@ const helpText = `To autogenerate a unique host based on project name
 
 const PWADevServer = {
     validateConfig: optionsValidator('PWADevServer', {
-        publicPath: 'string'
+        publicPath: 'string',
+        backendUrl: 'string'
     }),
     async configure(config) {
         debug('configure() invoked', config);
@@ -44,7 +46,7 @@ const PWADevServer = {
             host: '0.0.0.0',
             port: await portscanner.findAPortNotInUse(10000),
             stats: {
-                all: false,
+                all: !process.env.NODE_DEBUG ? false : undefined,
                 builtAt: true,
                 colors: true,
                 errors: true,
@@ -82,6 +84,14 @@ const PWADevServer = {
                             padding: 1
                         })
                     )
+                );
+            },
+            before(app) {
+                app.use(
+                    '/scale',
+                    expressSharp({
+                        baseHost: config.backendUrl
+                    })
                 );
             }
         };
@@ -190,6 +200,7 @@ be configured to have the same effect as 'id'.
             );
             const tabs = [].concat(...queryDirContents); // flatten
 
+            const oldBefore = devServerConfig.before;
             devServerConfig.before = app => {
                 // this middleware has a bad habit of calling next() when it
                 // should not, so let's give it a noop next()
@@ -199,6 +210,7 @@ be configured to have the same effect as 'id'.
                     tabs
                 });
                 app.get('/graphiql', (req, res) => middleware(req, res, noop));
+                oldBefore(app);
             };
         }
 

@@ -4,9 +4,11 @@ import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
+
 import classify from 'src/classify';
 import { makeProductMediaPath } from 'src/util/makeMediaPath';
 import { setCurrentPage, setPrevPageTotal } from 'src/actions/catalog';
+import { loadingIndicator } from 'src/components/LoadingIndicator';
 import CategoryContent from './categoryContent';
 import defaultClasses from './category.css';
 
@@ -58,12 +60,13 @@ class Category extends Component {
     };
 
     static getCatalogImageUrl(imagePath, { width } = {}) {
-        return width
-            ? makeProductMediaPath('sized', `${width}w`, imagePath)
-            : makeProductMediaPath(imagePath);
+        const path = makeProductMediaPath(imagePath);
+        return width ? `/resize/${width}w${path}` : path;
     }
+    static imageSizeBreakpoints =
+        '(max-width: 480px) 80vw, (max-width: 640px) 40vw, (max-width: 900px) 20vw';
 
-    static imageSizes = [160, 300, 480, 640];
+    static imageSourceWidths = [160, 300, 480, 640, 800];
 
     render() {
         const {
@@ -101,9 +104,7 @@ class Category extends Component {
                                 pageSize={pageSize}
                             />
                         ) : (
-                            <div className={classes.placeholder}>
-                                Fetching Data...
-                            </div>
+                            loadingIndicator
                         );
 
                     // Retrieve the total page count from GraphQL when ready
@@ -119,8 +120,9 @@ class Category extends Component {
                         <CategoryContent
                             classes={classes}
                             pageControl={totalWrapper}
-                            imageSizes={Category.imageSizes}
                             getCatalogImageUrl={Category.getCatalogImageUrl}
+                            imageSourceWidths={Category.imageSourceWidths}
+                            imageSizeBreakpoints={Category.imageSizeBreakpoints}
                             data={data}
                         />
                     );

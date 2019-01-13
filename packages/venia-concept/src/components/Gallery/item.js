@@ -1,15 +1,11 @@
 import React, { Component } from 'react';
-import { string, number, shape, func, bool } from 'prop-types';
+import { arrayOf, string, number, shape } from 'prop-types';
 import { Price } from '@magento/peregrine';
 import { Link } from 'react-router-dom';
 import classify from 'src/classify';
 import { transparentPlaceholder } from 'src/shared/images';
+import ResponsiveImage from 'src/components/ResponsiveImage';
 import defaultClasses from './item.css';
-
-const FALLBACK_IMAGE_WIDTH = 300;
-
-const imageWidth = '40vw';
-const imageHeight = '30vh';
 
 const ItemPlaceholder = ({ children, classes }) => (
     <div className={classes.root_pending}>
@@ -38,8 +34,8 @@ class GalleryItem extends Component {
             root: string,
             root_pending: string
         }),
-        getImageUrl: func.isRequired,
-        imageSizes: arrayOf(number),
+        imageSizeBreakpoints: string,
+        imageSourceWidths: arrayOf(number),
         item: shape({
             id: number.isRequired,
             name: string.isRequired,
@@ -53,16 +49,7 @@ class GalleryItem extends Component {
                     }).isRequired
                 }).isRequired
             }).isRequired
-        }),
-        onError: func,
-        onLoad: func,
-        showImage: bool
-    };
-
-    static defaultProps = {
-        imageSizes: [],
-        onError: () => {},
-        onLoad: () => {}
+        })
     };
 
     /**
@@ -73,9 +60,8 @@ class GalleryItem extends Component {
         const {
             classes,
             item,
-            getImageUrl,
-            imageSizes,
-            showImage
+            imageSizeBreakpoints,
+            imageSourceWidths
         } = this.props;
 
         if (!item) {
@@ -83,32 +69,21 @@ class GalleryItem extends Component {
         }
 
         const { small_image, name } = item;
-        const className = showImage ? classes.image : classes.image_pending;
+        const className = item ? classes.image : classes.image_pending;
 
         return (
-            <img
+            <ResponsiveImage
                 className={className}
-                srcset={imageSizes
-                    .map(
-                        width =>
-                            `${getImageUrl(small_image, { width })} ${width}w`
-                    )
-                    .join(', ')}
-                sizes={GalleryItem.sizes}
-                src={getImageUrl(small_image)}
+                sizes={imageSizeBreakpoints}
+                src={small_image}
                 alt={name}
-                onLoad={this.handleLoad}
-                onError={this.handleError}
+                widthOptions={imageSourceWidths}
             />
         );
     }
 
     get imagePlaceholder() {
-        const { classes, item, showImage } = this.props;
-
-        if (showImage) {
-            return null;
-        }
+        const { classes, imageSizeBreakpoints, item } = this.props;
 
         const className = item
             ? classes.imagePlaceholder
@@ -117,11 +92,9 @@ class GalleryItem extends Component {
         return (
             <img
                 className={className}
-                sizes={GalleryItem.sizes}
                 src={transparentPlaceholder}
                 alt=""
-                width={imageWidth}
-                height={imageHeight}
+                sizes={imageSizeBreakpoints}
             />
         );
     }
@@ -158,18 +131,6 @@ class GalleryItem extends Component {
             </div>
         );
     }
-
-    handleLoad = () => {
-        const { item, onLoad } = this.props;
-
-        onLoad(item.id);
-    };
-
-    handleError = () => {
-        const { item, onError } = this.props;
-
-        onError(item.id);
-    };
 }
 
 export default classify(defaultClasses)(GalleryItem);

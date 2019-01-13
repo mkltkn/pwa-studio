@@ -2,11 +2,8 @@ import React, { Component } from 'react';
 import { arrayOf, string, shape } from 'prop-types';
 import { Link } from 'react-router-dom';
 
+import ResponsiveImage from 'src/components/ResponsiveImage';
 import classify from 'src/classify';
-import {
-    makeCategoryMediaPath,
-    makeProductMediaPath
-} from 'src/util/makeMediaPath';
 import defaultClasses from './categoryTile.css';
 
 // TODO: get categoryUrlSuffix from graphql storeOptions when it is ready
@@ -34,40 +31,61 @@ class CategoryTile extends Component {
         }).isRequired
     };
 
-    get imagePath() {
-        const { image, productImagePreview } = this.props.item;
-        const previewProduct = productImagePreview.items[0];
-        if (image) {
-            return makeCategoryMediaPath(image);
-        } else if (previewProduct) {
-            return makeProductMediaPath(previewProduct.small_image);
-        } else {
+    get imageInfo() {
+        if (!this.props.item) {
             return null;
         }
+        const { image, productImagePreview } = this.props.item;
+        return image
+            ? {
+                  src: image.small_image,
+                  type: 'category'
+              }
+            : {
+                  src: productImagePreview.items[0].small_image,
+                  type: 'product'
+              };
     }
 
     render() {
-        const { imagePath, props } = this;
+        const { imageInfo, props } = this;
         const { classes, item } = props;
 
-        // interpolation doesn't work inside `url()` for legacy reasons
-        // so a custom property should wrap its value in `url()`
-        const imageUrl = imagePath ? `url(${imagePath})` : 'none';
-        const style = { '--venia-image': imageUrl };
-
-        // render an actual image element for accessibility
-        const imagePreview = imagePath ? (
-            <img className={classes.image} src={imagePath} alt={item.name} />
-        ) : null;
+        let imagePreview = null;
+        if (imageInfo && imageInfo.src && imageInfo.type) {
+            imagePreview = (
+                <ResponsiveImage
+                    alt={item.name}
+                    className={classes.image}
+                    sizes="(max-width: 320px) 40vw, (min-width: 640px 30vw"
+                    widthOptions={[240, 640]}
+                    render={({ src }, image) => {
+                        // interpolation doesn't work inside `url()` for legacy
+                        // reasons so a custom property should wrap its value in
+                        // `url()`. Additionally, use the fallback (large) src
+                        // instead of CSS image-set until image-set gains more
+                        // browser share.
+                        const imageUrl = src ? `url(${src})` : 'none';
+                        const style = { '--venia-image': imageUrl };
+                        return (
+                            <span
+                                className={classes.imageWrapper}
+                                style={style}
+                            >
+                                {image}
+                            </span>
+                        );
+                    }}
+                />
+            );
+        }
 
         return (
             <Link
                 className={classes.root}
                 to={`/${item.url_key}${categoryUrlSuffix}`}
             >
-                <span className={classes.imageWrapper} style={style}>
-                    {imagePreview}
-                </span>
+                {imagePreview}
                 <span className={classes.name}>{item.name}</span>
             </Link>
         );

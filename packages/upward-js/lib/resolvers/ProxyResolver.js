@@ -1,8 +1,5 @@
 const debug = require('debug')('upward-js:ProxyResolver');
-const { URL } = require('url');
 const proxyMiddleware = require('http-proxy-middleware');
-const connect = require('connect');
-const sharp = require('sharp');
 const AbstractResolver = require('./AbstractResolver');
 
 const AllServers = new Map();
@@ -42,40 +39,13 @@ class ProxyResolver extends AbstractResolver {
         let server = ProxyResolver.servers.get(target);
         if (!server) {
             debug(`creating new server for ${target}`);
-            const rasterImageFormats = /\.(jpg|jpeg|png|tiff)$/i;
-            server = connect();
-            server.use(async (req, res, next) => {
-                debug(`ran through image proxy server`, req.path);
-                if (rasterImageFormats.test(req.path)) {
-                    debug(`matches an image at ${req.path}, running sharp`);
-                    const proxyRes = await this.visitor.io.networkFetch(
-                        new URL(req.path, target).href,
-                        {
-                            headers: {
-                                'accept-encoding': 'none'
-                            }
-                        }
-                    );
-                    if (proxyRes.status >= 200 && proxyRes.status <= 400) {
-                        proxyRes.body
-                            .pipe(
-                                sharp().jpeg({ progressive: true, quality: 50 })
-                            )
-                            .pipe(res);
-                        return;
-                    }
-                }
-                next();
+            server = proxyMiddleware({
+                target,
+                secure: !ignoreSSLErrors,
+                changeOrigin: true,
+                autoRewrite: true,
+                cookieDomainRewrite: ''
             });
-            server.use(
-                proxyMiddleware({
-                    target,
-                    secure: !ignoreSSLErrors,
-                    changeOrigin: true,
-                    autoRewrite: true,
-                    cookieDomainRewrite: ''
-                })
-            );
             ProxyResolver.servers.set(target, server);
         }
 
